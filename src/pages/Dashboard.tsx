@@ -158,7 +158,7 @@ const Dashboard = () => {
                         <span className="font-medium text-foreground">{bank.name}</span>
                       </div>
                       <span className="font-semibold text-foreground">
-                        ₹{Number(bank.balance).toFixed(2)}
+                        <span className="text-success">₹{Number(bank.balance).toFixed(2)}</span>
                       </span>
                     </div>
                   ))}
