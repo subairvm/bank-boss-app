@@ -24,6 +24,7 @@ interface Transaction {
   category: string;
   notes: string;
   bank_id: string;
+  person_name: string;
   banks: { name: string };
 }
 
@@ -39,6 +40,7 @@ const Transactions = () => {
     category: "",
     notes: "",
     bank_id: "",
+    person_name: "",
   });
   const { toast } = useToast();
 
@@ -86,6 +88,7 @@ const Transactions = () => {
         category: formData.category,
         notes: formData.notes,
         bank_id: formData.bank_id,
+        person_name: formData.person_name || null,
       });
 
       if (transactionError) throw transactionError;
@@ -116,6 +119,7 @@ const Transactions = () => {
         category: "",
         notes: "",
         bank_id: "",
+        person_name: "",
       });
       fetchData();
     } catch (error: any) {
@@ -255,6 +259,15 @@ const Transactions = () => {
                   />
                 </div>
                 <div className="space-y-2">
+                  <Label htmlFor="person_name">Person Name (Optional)</Label>
+                  <Input
+                    id="person_name"
+                    value={formData.person_name}
+                    onChange={(e) => setFormData({ ...formData, person_name: e.target.value })}
+                    placeholder="e.g., John Doe"
+                  />
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="notes">Notes</Label>
                   <Textarea
                     id="notes"
@@ -309,6 +322,7 @@ const Transactions = () => {
                         </p>
                         <p className="text-sm text-muted-foreground">
                           {transaction.banks.name} • {new Date(transaction.date).toLocaleDateString()}
+                          {transaction.person_name && ` • ${transaction.person_name}`}
                         </p>
                         {transaction.notes && (
                           <p className="text-sm text-muted-foreground mt-1">{transaction.notes}</p>
@@ -318,7 +332,7 @@ const Transactions = () => {
                     <div className="flex items-center gap-4">
                       <span
                         className={`text-lg font-bold ${
-                          transaction.type === "income" ? "text-success" : "text-destructive"
+                          transaction.type === "income" ? "text-success" : "text-expense-light"
                         }`}
                       >
                         {transaction.type === "income" ? "+" : "-"}₹

@@ -44,6 +44,42 @@ export type Database = {
         }
         Relationships: []
       }
+      credits: {
+        Row: {
+          amount: number
+          created_at: string
+          date: string
+          description: string | null
+          id: string
+          person_name: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          date?: string
+          description?: string | null
+          id?: string
+          person_name: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          date?: string
+          description?: string | null
+          id?: string
+          person_name?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       transactions: {
         Row: {
           amount: number
@@ -53,6 +89,7 @@ export type Database = {
           date: string
           id: string
           notes: string | null
+          person_name: string | null
           type: string
           updated_at: string | null
           user_id: string
@@ -65,6 +102,7 @@ export type Database = {
           date: string
           id?: string
           notes?: string | null
+          person_name?: string | null
           type: string
           updated_at?: string | null
           user_id: string
@@ -77,6 +115,7 @@ export type Database = {
           date?: string
           id?: string
           notes?: string | null
+          person_name?: string | null
           type?: string
           updated_at?: string | null
           user_id?: string

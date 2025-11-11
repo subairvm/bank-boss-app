@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Wallet, ArrowLeftRight, TrendingUp, LogOut, DollarSign } from "lucide-react";
+import { LayoutDashboard, Wallet, ArrowLeftRight, TrendingUp, LogOut, DollarSign, Users } from "lucide-react";
 
 interface LayoutProps {
   children: ReactNode;
@@ -23,6 +23,7 @@ const Layout = ({ children }: LayoutProps) => {
     { to: "/banks", icon: Wallet, label: "Bank Accounts" },
     { to: "/transactions", icon: DollarSign, label: "Transactions" },
     { to: "/transfers", icon: ArrowLeftRight, label: "Transfers" },
+    { to: "/credits", icon: Users, label: "Credits" },
     { to: "/reports", icon: TrendingUp, label: "Reports" },
   ];
 

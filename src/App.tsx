@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import Banks from "./pages/Banks";
 import Transactions from "./pages/Transactions";
 import Transfers from "./pages/Transfers";
+import Credits from "./pages/Credits";
 import Reports from "./pages/Reports";
 import NotFound from "./pages/NotFound";
 
@@ -60,6 +61,7 @@ const App = () => {
             <Route path="/banks" element={session ? <Banks /> : <Navigate to="/auth" />} />
             <Route path="/transactions" element={session ? <Transactions /> : <Navigate to="/auth" />} />
             <Route path="/transfers" element={session ? <Transfers /> : <Navigate to="/auth" />} />
+            <Route path="/credits" element={session ? <Credits /> : <Navigate to="/auth" />} />
             <Route path="/reports" element={session ? <Reports /> : <Navigate to="/auth" />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

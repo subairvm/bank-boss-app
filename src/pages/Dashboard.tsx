@@ -17,6 +17,7 @@ interface Transaction {
   type: "income" | "expense";
   amount: number;
   date: string;
+  person_name: string;
 }
 
 const Dashboard = () => {
@@ -84,7 +85,7 @@ const Dashboard = () => {
       title: "Total Expenses",
       value: totalExpenses,
       icon: TrendingDown,
-      color: "text-destructive",
+      color: "text-expense-light",
       bgColor: "bg-destructive/10",
     },
     {
@@ -182,15 +183,20 @@ const Dashboard = () => {
                         {transaction.type === "income" ? (
                           <TrendingUp className="h-4 w-4 text-success" />
                         ) : (
-                          <TrendingDown className="h-4 w-4 text-destructive" />
+                          <TrendingDown className="h-4 w-4 text-expense-light" />
                         )}
-                        <span className="text-sm text-foreground">
-                          {new Date(transaction.date).toLocaleDateString()}
-                        </span>
+                        <div>
+                          <span className="text-sm text-foreground">
+                            {new Date(transaction.date).toLocaleDateString()}
+                          </span>
+                          {transaction.person_name && (
+                            <p className="text-xs text-muted-foreground">{transaction.person_name}</p>
+                          )}
+                        </div>
                       </div>
                       <span
                         className={`font-semibold ${
-                          transaction.type === "income" ? "text-success" : "text-destructive"
+                          transaction.type === "income" ? "text-success" : "text-expense-light"
                         }`}
                       >
                         {transaction.type === "income" ? "+" : "-"}₹
