@@ -168,13 +168,13 @@ const Reports = () => {
                           })}
                         </p>
                         <div className="flex justify-between text-sm">
-                          <span className="text-success">Income: ${data.income.toFixed(2)}</span>
+                          <span className="text-success">Income: ₹{data.income.toFixed(2)}</span>
                           <span className="text-destructive">
-                            Expenses: ${data.expense.toFixed(2)}
+                            Expenses: ₹{data.expense.toFixed(2)}
                           </span>
                         </div>
                         <div className="text-sm font-semibold text-foreground">
-                          Net: ${(data.income - data.expense).toFixed(2)}
+                          Net: ₹{(data.income - data.expense).toFixed(2)}
                         </div>
                       </div>
                     ))}
@@ -196,9 +196,9 @@ const Reports = () => {
                     <div key={category} className="space-y-2">
                       <p className="font-semibold text-foreground">{category}</p>
                       <div className="flex justify-between text-sm">
-                        <span className="text-success">Income: ${data.income.toFixed(2)}</span>
+                        <span className="text-success">Income: ₹{data.income.toFixed(2)}</span>
                         <span className="text-destructive">
-                          Expenses: ${data.expense.toFixed(2)}
+                          Expenses: ₹{data.expense.toFixed(2)}
                         </span>
                       </div>
                     </div>

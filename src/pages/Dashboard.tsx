@@ -130,7 +130,7 @@ const Dashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className={`text-3xl font-bold ${stat.color}`}>
-                    ${stat.value.toFixed(2)}
+                    ₹{stat.value.toFixed(2)}
                   </div>
                 </CardContent>
               </Card>
@@ -158,7 +158,7 @@ const Dashboard = () => {
                         <span className="font-medium text-foreground">{bank.name}</span>
                       </div>
                       <span className="font-semibold text-foreground">
-                        ${Number(bank.balance).toFixed(2)}
+                        ₹{Number(bank.balance).toFixed(2)}
                       </span>
                     </div>
                   ))}
@@ -193,7 +193,7 @@ const Dashboard = () => {
                           transaction.type === "income" ? "text-success" : "text-destructive"
                         }`}
                       >
-                        {transaction.type === "income" ? "+" : "-"}$
+                        {transaction.type === "income" ? "+" : "-"}₹
                         {Number(transaction.amount).toFixed(2)}
                       </span>
                     </div>

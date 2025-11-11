@@ -334,7 +334,7 @@ const Transfers = () => {
                     </div>
                     <div className="flex items-center gap-4">
                       <span className="text-lg font-bold text-foreground">
-                        ${Number(transfer.amount).toFixed(2)}
+                        ₹{Number(transfer.amount).toFixed(2)}
                       </span>
                       <Button size="icon" variant="ghost" onClick={() => handleDelete(transfer)}>
                         <Trash2 className="h-4 w-4" />

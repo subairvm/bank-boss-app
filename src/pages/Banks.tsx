@@ -226,7 +226,7 @@ const Banks = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-3xl font-bold text-foreground">
-                    ${Number(bank.balance).toFixed(2)}
+                    ₹{Number(bank.balance).toFixed(2)}
                   </p>
                 </CardContent>
               </Card>

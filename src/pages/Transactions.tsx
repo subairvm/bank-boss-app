@@ -321,7 +321,7 @@ const Transactions = () => {
                           transaction.type === "income" ? "text-success" : "text-destructive"
                         }`}
                       >
-                        {transaction.type === "income" ? "+" : "-"}$
+                        {transaction.type === "income" ? "+" : "-"}₹
                         {Number(transaction.amount).toFixed(2)}
                       </span>
                       <Button

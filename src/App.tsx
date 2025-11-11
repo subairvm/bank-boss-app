@@ -14,6 +14,11 @@ import Transfers from "./pages/Transfers";
 import Reports from "./pages/Reports";
 import NotFound from "./pages/NotFound";
 
+// Enable dark mode by default
+if (typeof document !== 'undefined') {
+  document.documentElement.classList.add('dark');
+}
+
 const queryClient = new QueryClient();
 
 const App = () => {
