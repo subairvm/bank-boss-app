@@ -217,7 +217,7 @@ const Credits = () => {
         <div className="grid gap-4 md:grid-cols-2">
           <Card className="shadow-card">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">People Owe Me</CardTitle>
+              <CardTitle className="text-sm font-medium">People Get Me</CardTitle>
               <UserCheck className="h-4 w-4 text-success" />
             </CardHeader>
             <CardContent>
@@ -226,7 +226,7 @@ const Credits = () => {
           </Card>
           <Card className="shadow-card">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">I Owe People</CardTitle>
+              <CardTitle className="text-sm font-medium">I Give People</CardTitle>
               <UserX className="h-4 w-4 text-expense-light" />
             </CardHeader>
             <CardContent>
