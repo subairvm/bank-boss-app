@@ -134,7 +134,7 @@ const Credits = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-4xl font-bold text-foreground">Credits</h1>
-            <p className="text-muted-foreground mt-2">Track money people owe you and money you owe</p>
+            <p className="text-muted-foreground mt-2">Track money people I Give and money Get Me</p>
           </div>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
