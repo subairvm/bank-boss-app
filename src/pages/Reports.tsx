@@ -128,7 +128,7 @@ const Reports = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-4xl font-bold text-foreground">Reports</h1>
-            <p className="text-muted-foreground mt-2">Analyze your financial data</p>
+            <p className="text-muted-foreground mt-2">Analyze My Financial Data</p>
           </div>
           <div className="flex gap-2">
             <Button onClick={handleExport} variant="outline">
