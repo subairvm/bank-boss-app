@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import Layout from "@/components/Layout";
 import { Plus, Trash2, TrendingUp, TrendingDown } from "lucide-react";
+import { INCOME_CATEGORIES, EXPENSE_CATEGORIES } from "@/lib/categories";
 
 interface Bank {
   id: string;
@@ -77,6 +78,15 @@ const Transactions = () => {
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) return;
+
+    if (!formData.category) {
+      toast({
+        variant: "destructive",
+        title: "Category required",
+        description: "Please select a category for this transaction",
+      });
+      return;
+    }
 
     try {
       // Insert transaction
@@ -198,7 +208,7 @@ const Transactions = () => {
                   <Select
                     value={formData.type}
                     onValueChange={(value: "income" | "expense") =>
-                      setFormData({ ...formData, type: value })
+                      setFormData({ ...formData, type: value, category: "" })
                     }
                   >
                     <SelectTrigger>
@@ -251,12 +261,23 @@ const Transactions = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="category">Category</Label>
-                  <Input
-                    id="category"
+                  <Select
                     value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    placeholder="e.g., Salary, Groceries"
-                  />
+                    onValueChange={(value) => setFormData({ ...formData, category: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(formData.type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES).map(
+                        (category) => (
+                          <SelectItem key={category} value={category}>
+                            {category}
+                          </SelectItem>
+                        )
+                      )}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="person_name">Person Name (Optional)</Label>
