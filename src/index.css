@@ -35,7 +35,7 @@ All colors MUST be HSL.
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
     
-    --expense-light: 0 84% 70%;
+    --expense-light: 16.62 94.14% 44.21%;
     --expense-light-foreground: 0 0% 100%;
 
     --border: 214 32% 91%;
@@ -85,7 +85,7 @@ All colors MUST be HSL.
     --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
     
-    --expense-light: 0 70% 65%;
+    --expense-light: 16.62 94.14% 44.21%;
     --expense-light-foreground: 210 40% 98%;
 
     --border: 217 33% 22%;
