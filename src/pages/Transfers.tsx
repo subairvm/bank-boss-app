@@ -208,7 +208,7 @@ const Transfers = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-4xl font-bold text-foreground">Transfers</h1>
-            <p className="text-muted-foreground mt-2">Move money between your accounts</p>
+            <p className="text-muted-foreground mt-2">Move Money Between My Accounts</p>
           </div>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
