@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import Layout from "@/components/Layout";
 import { Plus, Trash2, TrendingUp, TrendingDown } from "lucide-react";
-import { INCOME_CATEGORIES, EXPENSE_CATEGORIES } from "@/lib/categories";
+import { INCOME_CATEGORIES, EXPENSE_CATEGORIES, getCategoryIcon } from "@/lib/categories";
 
 interface Bank {
   id: string;
@@ -270,11 +270,17 @@ const Transactions = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {(formData.type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES).map(
-                        (category) => (
-                          <SelectItem key={category} value={category}>
-                            {category}
-                          </SelectItem>
-                        )
+                        (category) => {
+                          const Icon = category.icon;
+                          return (
+                            <SelectItem key={category.name} value={category.name}>
+                              <div className="flex items-center gap-2">
+                                <Icon className="h-4 w-4" />
+                                <span>{category.name}</span>
+                              </div>
+                            </SelectItem>
+                          );
+                        }
                       )}
                     </SelectContent>
                   </Select>
@@ -338,9 +344,15 @@ const Transactions = () => {
                         )}
                       </div>
                       <div>
-                        <p className="font-semibold text-foreground">
-                          {transaction.category || "Uncategorized"}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          {transaction.category && (() => {
+                            const CategoryIcon = getCategoryIcon(transaction.category);
+                            return <CategoryIcon className="h-4 w-4 text-muted-foreground" />;
+                          })()}
+                          <p className="font-semibold text-foreground">
+                            {transaction.category || "Uncategorized"}
+                          </p>
+                        </div>
                         <p className="text-sm text-muted-foreground">
                           {transaction.banks.name} • {new Date(transaction.date).toLocaleDateString()}
                           {transaction.person_name && ` • ${transaction.person_name}`}
