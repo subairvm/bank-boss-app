@@ -9,12 +9,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import Layout from "@/components/Layout";
-import { Plus, Trash2, TrendingUp, TrendingDown, Filter, X } from "lucide-react";
+import { Plus, Trash2, TrendingUp, TrendingDown, Filter, X, CalendarIcon } from "lucide-react";
 import { INCOME_CATEGORIES, EXPENSE_CATEGORIES, getCategoryIcon } from "@/lib/categories";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Calendar } from "@/components/ui/calendar";
+import { format, subDays, subMonths, startOfMonth, endOfMonth, startOfYear, endOfYear } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface Bank {
   id: string;
@@ -33,12 +36,19 @@ interface Transaction {
   banks: { name: string };
 }
 
+type DateRangePreset = "all" | "7days" | "30days" | "thisMonth" | "lastMonth" | "thisYear" | "custom";
+
 const Transactions = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [banks, setBanks] = useState<Bank[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [dateRangePreset, setDateRangePreset] = useState<DateRangePreset>("all");
+  const [customDateRange, setCustomDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+    from: undefined,
+    to: undefined,
+  });
   const [formData, setFormData] = useState({
     type: "income" as "income" | "expense",
     amount: "",
@@ -188,9 +198,81 @@ const Transactions = () => {
     );
   };
 
-  const filteredTransactions = selectedCategories.length > 0
-    ? transactions.filter(t => selectedCategories.includes(t.category))
-    : transactions;
+  const getDateRange = (): { from: Date; to: Date } | null => {
+    const today = new Date();
+    
+    switch (dateRangePreset) {
+      case "all":
+        return null;
+      case "7days":
+        return { from: subDays(today, 7), to: today };
+      case "30days":
+        return { from: subDays(today, 30), to: today };
+      case "thisMonth":
+        return { from: startOfMonth(today), to: endOfMonth(today) };
+      case "lastMonth":
+        const lastMonth = subMonths(today, 1);
+        return { from: startOfMonth(lastMonth), to: endOfMonth(lastMonth) };
+      case "thisYear":
+        return { from: startOfYear(today), to: endOfYear(today) };
+      case "custom":
+        if (customDateRange.from && customDateRange.to) {
+          return { from: customDateRange.from, to: customDateRange.to };
+        }
+        return null;
+      default:
+        return null;
+    }
+  };
+
+  const filteredTransactions = transactions.filter((transaction) => {
+    // Category filter
+    if (selectedCategories.length > 0 && !selectedCategories.includes(transaction.category)) {
+      return false;
+    }
+    
+    // Date filter
+    const dateRange = getDateRange();
+    if (dateRange) {
+      const transactionDate = new Date(transaction.date);
+      if (transactionDate < dateRange.from || transactionDate > dateRange.to) {
+        return false;
+      }
+    }
+    
+    return true;
+  });
+
+  const handleDatePresetChange = (preset: DateRangePreset) => {
+    setDateRangePreset(preset);
+    if (preset !== "custom") {
+      setCustomDateRange({ from: undefined, to: undefined });
+    }
+  };
+
+  const getDateRangeLabel = (): string => {
+    switch (dateRangePreset) {
+      case "all":
+        return "All Time";
+      case "7days":
+        return "Last 7 Days";
+      case "30days":
+        return "Last 30 Days";
+      case "thisMonth":
+        return "This Month";
+      case "lastMonth":
+        return "Last Month";
+      case "thisYear":
+        return "This Year";
+      case "custom":
+        if (customDateRange.from && customDateRange.to) {
+          return `${format(customDateRange.from, "MMM d")} - ${format(customDateRange.to, "MMM d, yyyy")}`;
+        }
+        return "Custom Range";
+      default:
+        return "All Time";
+    }
+  };
 
   if (loading) {
     return (
@@ -214,8 +296,58 @@ const Transactions = () => {
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline" className="gap-2">
+                  <CalendarIcon className="h-4 w-4" />
+                  {getDateRangeLabel()}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-4" align="end">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Quick Ranges</Label>
+                    <div className="grid gap-2">
+                      {[
+                        { value: "all", label: "All Time" },
+                        { value: "7days", label: "Last 7 Days" },
+                        { value: "30days", label: "Last 30 Days" },
+                        { value: "thisMonth", label: "This Month" },
+                        { value: "lastMonth", label: "Last Month" },
+                        { value: "thisYear", label: "This Year" },
+                      ].map((preset) => (
+                        <Button
+                          key={preset.value}
+                          variant={dateRangePreset === preset.value ? "default" : "outline"}
+                          size="sm"
+                          className="justify-start"
+                          onClick={() => handleDatePresetChange(preset.value as DateRangePreset)}
+                        >
+                          {preset.label}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Custom Range</Label>
+                    <Calendar
+                      mode="range"
+                      selected={{ from: customDateRange.from, to: customDateRange.to }}
+                      onSelect={(range) => {
+                        setCustomDateRange({ from: range?.from, to: range?.to });
+                        if (range?.from && range?.to) {
+                          setDateRangePreset("custom");
+                        }
+                      }}
+                      numberOfMonths={2}
+                      className={cn("pointer-events-auto")}
+                    />
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="gap-2">
                   <Filter className="h-4 w-4" />
-                  Filter Categories
+                  Categories
                   {selectedCategories.length > 0 && (
                     <Badge variant="secondary" className="ml-1">
                       {selectedCategories.length}
