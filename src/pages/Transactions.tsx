@@ -9,8 +9,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import Layout from "@/components/Layout";
-import { Plus, Trash2, TrendingUp, TrendingDown } from "lucide-react";
+import { Plus, Trash2, TrendingUp, TrendingDown, Filter, X } from "lucide-react";
 import { INCOME_CATEGORIES, EXPENSE_CATEGORIES, getCategoryIcon } from "@/lib/categories";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface Bank {
   id: string;
@@ -34,6 +38,7 @@ const Transactions = () => {
   const [banks, setBanks] = useState<Bank[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     type: "income" as "income" | "expense",
     amount: "",
@@ -173,6 +178,20 @@ const Transactions = () => {
     }
   };
 
+  const allCategories = [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES];
+  
+  const toggleCategory = (categoryName: string) => {
+    setSelectedCategories(prev =>
+      prev.includes(categoryName)
+        ? prev.filter(c => c !== categoryName)
+        : [...prev, categoryName]
+    );
+  };
+
+  const filteredTransactions = selectedCategories.length > 0
+    ? transactions.filter(t => selectedCategories.includes(t.category))
+    : transactions;
+
   if (loading) {
     return (
       <Layout>
@@ -191,13 +210,64 @@ const Transactions = () => {
             <h1 className="text-4xl font-bold text-foreground">Transactions</h1>
             <p className="text-muted-foreground mt-2">Track My Income and Expenses</p>
           </div>
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Transaction
-              </Button>
-            </DialogTrigger>
+          <div className="flex items-center gap-3">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="gap-2">
+                  <Filter className="h-4 w-4" />
+                  Filter Categories
+                  {selectedCategories.length > 0 && (
+                    <Badge variant="secondary" className="ml-1">
+                      {selectedCategories.length}
+                    </Badge>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[300px] p-0" align="end">
+                <Command>
+                  <CommandInput placeholder="Search categories..." />
+                  <CommandList>
+                    <CommandEmpty>No categories found.</CommandEmpty>
+                    <CommandGroup>
+                      {allCategories.map((category) => {
+                        const Icon = category.icon;
+                        const isSelected = selectedCategories.includes(category.name);
+                        return (
+                          <CommandItem
+                            key={category.name}
+                            onSelect={() => toggleCategory(category.name)}
+                            className="flex items-center gap-2 cursor-pointer"
+                          >
+                            <Checkbox checked={isSelected} />
+                            <Icon className="h-4 w-4" />
+                            <span>{category.name}</span>
+                          </CommandItem>
+                        );
+                      })}
+                    </CommandGroup>
+                  </CommandList>
+                  {selectedCategories.length > 0 && (
+                    <div className="border-t p-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedCategories([])}
+                        className="w-full"
+                      >
+                        Clear All
+                      </Button>
+                    </div>
+                  )}
+                </Command>
+              </PopoverContent>
+            </Popover>
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Transaction
+                </Button>
+              </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Add Transaction</DialogTitle>
@@ -309,7 +379,30 @@ const Transactions = () => {
               </form>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
+
+        {selectedCategories.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {selectedCategories.map((category) => {
+              const Icon = getCategoryIcon(category);
+              return (
+                <Badge key={category} variant="secondary" className="gap-1 pr-1">
+                  <Icon className="h-3 w-3" />
+                  {category}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-4 w-4 p-0 ml-1 hover:bg-transparent"
+                    onClick={() => toggleCategory(category)}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </Badge>
+              );
+            })}
+          </div>
+        )}
 
         {transactions.length === 0 ? (
           <Card className="shadow-card">
@@ -325,8 +418,13 @@ const Transactions = () => {
               <CardTitle>All Transactions</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {transactions.map((transaction) => (
+              {filteredTransactions.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">
+                  No transactions match the selected categories.
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {filteredTransactions.map((transaction) => (
                   <div
                     key={transaction.id}
                     className="flex items-center justify-between border-b border-border pb-4 last:border-0"
@@ -380,8 +478,9 @@ const Transactions = () => {
                       </Button>
                     </div>
                   </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
