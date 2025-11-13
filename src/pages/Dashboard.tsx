@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Wallet, TrendingUp, TrendingDown, DollarSign } from "lucide-react";
+import { Wallet, TrendingUp, TrendingDown, IndianRupee } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Layout from "@/components/Layout";
 
@@ -91,7 +91,7 @@ const Dashboard = () => {
     {
       title: "Net Income",
       value: totalIncome - totalExpenses,
-      icon: DollarSign,
+      icon: IndianRupee,
       color: totalIncome - totalExpenses >= 0 ? "text-success" : "text-destructive",
       bgColor:
         totalIncome - totalExpenses >= 0 ? "bg-success/10" : "bg-destructive/10",
