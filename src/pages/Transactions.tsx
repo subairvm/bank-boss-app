@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import Layout from "@/components/Layout";
-import { Plus, Trash2, TrendingUp, TrendingDown, Filter, X, CalendarIcon } from "lucide-react";
+import { Plus, Trash2, TrendingUp, TrendingDown, Filter, X, CalendarIcon, Download } from "lucide-react";
 import { INCOME_CATEGORIES, EXPENSE_CATEGORIES, getCategoryIcon } from "@/lib/categories";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -274,6 +274,59 @@ const Transactions = () => {
     }
   };
 
+  const exportToCSV = () => {
+    if (filteredTransactions.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "No data to export",
+        description: "There are no transactions to export with the current filters.",
+      });
+      return;
+    }
+
+    // CSV Headers
+    const headers = ["Date", "Type", "Category", "Amount (₹)", "Bank", "Person", "Notes"];
+    
+    // Convert transactions to CSV rows
+    const rows = filteredTransactions.map((transaction) => {
+      return [
+        new Date(transaction.date).toLocaleDateString(),
+        transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1),
+        transaction.category || "Uncategorized",
+        Number(transaction.amount).toFixed(2),
+        transaction.banks.name,
+        transaction.person_name || "",
+        (transaction.notes || "").replace(/"/g, '""'), // Escape quotes
+      ];
+    });
+
+    // Combine headers and rows
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(","))
+    ].join("\n");
+
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    
+    const timestamp = format(new Date(), "yyyy-MM-dd_HHmm");
+    const filename = `transactions_${timestamp}.csv`;
+    
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: "Export successful",
+      description: `Exported ${filteredTransactions.length} transactions to ${filename}`,
+    });
+  };
+
   if (loading) {
     return (
       <Layout>
@@ -292,7 +345,11 @@ const Transactions = () => {
             <h1 className="text-4xl font-bold text-foreground">Transactions</h1>
             <p className="text-muted-foreground mt-2">Track My Income and Expenses</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <Button variant="outline" className="gap-2" onClick={exportToCSV}>
+              <Download className="h-4 w-4" />
+              Export CSV
+            </Button>
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline" className="gap-2">
