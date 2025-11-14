@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import Layout from "@/components/Layout";
-import { Download, Upload, CalendarIcon } from "lucide-react";
+import { Download, Upload, CalendarIcon, TrendingUp, TrendingDown, IndianRupee } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -155,6 +155,21 @@ const Reports = () => {
   const dailyReport = calculateDailyReport();
   const categoryReport = calculateCategoryReport();
 
+  const calculateSummary = () => {
+    const filtered = filterTransactionsByDateRange();
+    const totalIncome = filtered
+      .filter((t) => t.type === "income")
+      .reduce((sum, t) => sum + Number(t.amount), 0);
+    const totalExpense = filtered
+      .filter((t) => t.type === "expense")
+      .reduce((sum, t) => sum + Number(t.amount), 0);
+    const netBalance = totalIncome - totalExpense;
+    
+    return { totalIncome, totalExpense, netBalance };
+  };
+
+  const summary = calculateSummary();
+
   if (loading) {
     return (
       <Layout>
@@ -168,7 +183,7 @@ const Reports = () => {
   return (
     <Layout>
       <div className="space-y-8">
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-4xl font-bold text-foreground">Reports</h1>
@@ -228,6 +243,50 @@ const Reports = () => {
                 </div>
               </PopoverContent>
             </Popover>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card className="shadow-card">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Total Income
+                </CardTitle>
+                <TrendingUp className="h-4 w-4 text-success" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-success">
+                  ₹{summary.totalIncome.toFixed(2)}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-card">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Total Expenses
+                </CardTitle>
+                <TrendingDown className="h-4 w-4 text-destructive" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-destructive">
+                  ₹{summary.totalExpense.toFixed(2)}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-card">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Net Balance
+                </CardTitle>
+                <IndianRupee className={`h-4 w-4 ${summary.netBalance >= 0 ? "text-success" : "text-destructive"}`} />
+              </CardHeader>
+              <CardContent>
+                <div className={`text-2xl font-bold ${summary.netBalance >= 0 ? "text-success" : "text-destructive"}`}>
+                  ₹{summary.netBalance.toFixed(2)}
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
 
