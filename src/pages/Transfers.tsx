@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import Layout from "@/components/Layout";
-import { Plus, Trash2, ArrowRight } from "lucide-react";
+import { Plus, Trash2, ArrowRight, Pencil } from "lucide-react";
 
 interface Bank {
   id: string;
@@ -32,6 +32,7 @@ const Transfers = () => {
   const [banks, setBanks] = useState<Bank[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
+  const [editingTransfer, setEditingTransfer] = useState<Transfer | null>(null);
   const [formData, setFormData] = useState({
     from_bank_id: "",
     to_bank_id: "",
@@ -89,47 +90,118 @@ const Transfers = () => {
     }
 
     try {
-      // Insert transfer
-      const { error: transferError } = await supabase.from("transfers").insert({
-        user_id: user.id,
-        from_bank_id: formData.from_bank_id,
-        to_bank_id: formData.to_bank_id,
-        amount: parseFloat(formData.amount),
-        date: formData.date,
-        notes: formData.notes,
-      });
-
-      if (transferError) throw transferError;
-
-      // Update balances
       const amount = parseFloat(formData.amount);
 
-      // Decrease from bank
-      const { data: fromBankData } = await supabase
-        .from("banks")
-        .select("balance")
-        .eq("id", formData.from_bank_id)
-        .single();
+      if (editingTransfer) {
+        // First, reverse the old transfer's balance changes
+        const oldAmount = Number(editingTransfer.amount);
 
-      await supabase
-        .from("banks")
-        .update({ balance: Number(fromBankData?.balance || 0) - amount })
-        .eq("id", formData.from_bank_id);
+        // Restore old from bank
+        const { data: oldFromBankData } = await supabase
+          .from("banks")
+          .select("balance")
+          .eq("id", editingTransfer.from_bank_id)
+          .single();
 
-      // Increase to bank
-      const { data: toBankData } = await supabase
-        .from("banks")
-        .select("balance")
-        .eq("id", formData.to_bank_id)
-        .single();
+        await supabase
+          .from("banks")
+          .update({ balance: Number(oldFromBankData?.balance || 0) + oldAmount })
+          .eq("id", editingTransfer.from_bank_id);
 
-      await supabase
-        .from("banks")
-        .update({ balance: Number(toBankData?.balance || 0) + amount })
-        .eq("id", formData.to_bank_id);
+        // Restore old to bank
+        const { data: oldToBankData } = await supabase
+          .from("banks")
+          .select("balance")
+          .eq("id", editingTransfer.to_bank_id)
+          .single();
 
-      toast({ title: "Transfer completed successfully" });
+        await supabase
+          .from("banks")
+          .update({ balance: Number(oldToBankData?.balance || 0) - oldAmount })
+          .eq("id", editingTransfer.to_bank_id);
+
+        // Update transfer
+        const { error: updateError } = await supabase
+          .from("transfers")
+          .update({
+            from_bank_id: formData.from_bank_id,
+            to_bank_id: formData.to_bank_id,
+            amount: amount,
+            date: formData.date,
+            notes: formData.notes,
+          })
+          .eq("id", editingTransfer.id);
+
+        if (updateError) throw updateError;
+
+        // Apply new transfer's balance changes
+        // Decrease new from bank
+        const { data: newFromBankData } = await supabase
+          .from("banks")
+          .select("balance")
+          .eq("id", formData.from_bank_id)
+          .single();
+
+        await supabase
+          .from("banks")
+          .update({ balance: Number(newFromBankData?.balance || 0) - amount })
+          .eq("id", formData.from_bank_id);
+
+        // Increase new to bank
+        const { data: newToBankData } = await supabase
+          .from("banks")
+          .select("balance")
+          .eq("id", formData.to_bank_id)
+          .single();
+
+        await supabase
+          .from("banks")
+          .update({ balance: Number(newToBankData?.balance || 0) + amount })
+          .eq("id", formData.to_bank_id);
+
+        toast({ title: "Transfer updated successfully" });
+      } else {
+        // Insert transfer
+        const { error: transferError } = await supabase.from("transfers").insert({
+          user_id: user.id,
+          from_bank_id: formData.from_bank_id,
+          to_bank_id: formData.to_bank_id,
+          amount: amount,
+          date: formData.date,
+          notes: formData.notes,
+        });
+
+        if (transferError) throw transferError;
+
+        // Decrease from bank
+        const { data: fromBankData } = await supabase
+          .from("banks")
+          .select("balance")
+          .eq("id", formData.from_bank_id)
+          .single();
+
+        await supabase
+          .from("banks")
+          .update({ balance: Number(fromBankData?.balance || 0) - amount })
+          .eq("id", formData.from_bank_id);
+
+        // Increase to bank
+        const { data: toBankData } = await supabase
+          .from("banks")
+          .select("balance")
+          .eq("id", formData.to_bank_id)
+          .single();
+
+        await supabase
+          .from("banks")
+          .update({ balance: Number(toBankData?.balance || 0) + amount })
+          .eq("id", formData.to_bank_id);
+
+        toast({ title: "Transfer created successfully" });
+      }
+
       setOpen(false);
+      setEditingTransfer(null);
       setFormData({
         from_bank_id: "",
         to_bank_id: "",
@@ -145,6 +217,18 @@ const Transfers = () => {
         description: error.message,
       });
     }
+  };
+
+  const handleEdit = (transfer: Transfer) => {
+    setEditingTransfer(transfer);
+    setFormData({
+      from_bank_id: transfer.from_bank_id,
+      to_bank_id: transfer.to_bank_id,
+      amount: transfer.amount.toString(),
+      date: transfer.date,
+      notes: transfer.notes || "",
+    });
+    setOpen(true);
   };
 
   const handleDelete = async (transfer: Transfer) => {
@@ -210,7 +294,19 @@ const Transfers = () => {
             <h1 className="text-4xl font-bold text-foreground">Transfers</h1>
             <p className="text-muted-foreground mt-2">Move Money Between My Accounts</p>
           </div>
-          <Dialog open={open} onOpenChange={setOpen}>
+          <Dialog open={open} onOpenChange={(isOpen) => {
+            setOpen(isOpen);
+            if (!isOpen) {
+              setEditingTransfer(null);
+              setFormData({
+                from_bank_id: "",
+                to_bank_id: "",
+                amount: "",
+                date: new Date().toISOString().split("T")[0],
+                notes: "",
+              });
+            }
+          }}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
@@ -219,7 +315,7 @@ const Transfers = () => {
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>New Transfer</DialogTitle>
+                <DialogTitle>{editingTransfer ? "Edit Transfer" : "New Transfer"}</DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
@@ -289,7 +385,7 @@ const Transfers = () => {
                   />
                 </div>
                 <Button type="submit" className="w-full">
-                  Transfer Funds
+                  {editingTransfer ? "Update Transfer" : "Transfer Funds"}
                 </Button>
               </form>
             </DialogContent>
@@ -336,6 +432,9 @@ const Transfers = () => {
                       <span className="text-lg font-bold text-foreground">
                         ₹{Number(transfer.amount).toFixed(2)}
                       </span>
+                      <Button size="icon" variant="ghost" onClick={() => handleEdit(transfer)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
                       <Button size="icon" variant="ghost" onClick={() => handleDelete(transfer)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
