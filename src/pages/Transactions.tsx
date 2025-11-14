@@ -243,6 +243,24 @@ const Transactions = () => {
     return true;
   });
 
+  const calculateCategoryTotals = () => {
+    const categoryTotals: {
+      [category: string]: { income: number; expense: number };
+    } = {};
+
+    filteredTransactions.forEach((transaction) => {
+      const category = transaction.category || "Uncategorized";
+      if (!categoryTotals[category]) {
+        categoryTotals[category] = { income: 0, expense: 0 };
+      }
+      categoryTotals[category][transaction.type] += Number(transaction.amount);
+    });
+
+    return categoryTotals;
+  };
+
+  const categoryTotals = calculateCategoryTotals();
+
   const handleDatePresetChange = (preset: DateRangePreset) => {
     setDateRangePreset(preset);
     if (preset !== "custom") {
@@ -591,6 +609,61 @@ const Transactions = () => {
               );
             })}
           </div>
+        )}
+
+        {filteredTransactions.length > 0 && (
+          <Card className="shadow-card">
+            <CardHeader>
+              <CardTitle>Category Totals</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {Object.entries(categoryTotals)
+                  .sort((a, b) => {
+                    const totalA = a[1].income + a[1].expense;
+                    const totalB = b[1].income + b[1].expense;
+                    return totalB - totalA;
+                  })
+                  .map(([category, totals]) => {
+                    const CategoryIcon = getCategoryIcon(category);
+                    const net = totals.income - totals.expense;
+                    return (
+                      <div
+                        key={category}
+                        className="p-4 border border-border rounded-lg space-y-2"
+                      >
+                        <div className="flex items-center gap-2">
+                          <CategoryIcon className="h-4 w-4 text-muted-foreground" />
+                          <p className="font-semibold text-foreground">{category}</p>
+                        </div>
+                        {totals.income > 0 && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Income:</span>
+                            <span className="text-success font-medium">
+                              ₹{totals.income.toFixed(2)}
+                            </span>
+                          </div>
+                        )}
+                        {totals.expense > 0 && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Expenses:</span>
+                            <span className="text-destructive font-medium">
+                              ₹{totals.expense.toFixed(2)}
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex justify-between text-sm font-semibold pt-2 border-t border-border">
+                          <span className="text-muted-foreground">Net:</span>
+                          <span className={net >= 0 ? "text-success" : "text-destructive"}>
+                            ₹{net.toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         {transactions.length === 0 ? (
