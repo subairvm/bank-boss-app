@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import Layout from "@/components/Layout";
-import { Plus, Trash2, TrendingUp, TrendingDown, Filter, X, CalendarIcon, Download } from "lucide-react";
+import { Plus, Trash2, TrendingUp, TrendingDown, Filter, X, CalendarIcon, Download, Pencil } from "lucide-react";
 import { INCOME_CATEGORIES, EXPENSE_CATEGORIES, getCategoryIcon } from "@/lib/categories";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -43,6 +43,7 @@ const Transactions = () => {
   const [banks, setBanks] = useState<Bank[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [dateRangePreset, setDateRangePreset] = useState<DateRangePreset>("all");
   const [customDateRange, setCustomDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
@@ -104,23 +105,71 @@ const Transactions = () => {
     }
 
     try {
-      // Insert transaction
-      const { error: transactionError } = await supabase.from("transactions").insert({
-        user_id: user.id,
-        type: formData.type,
-        amount: parseFloat(formData.amount),
-        date: formData.date,
-        category: formData.category,
-        notes: formData.notes,
-        bank_id: formData.bank_id,
-        person_name: formData.person_name || null,
-      });
+      if (editingTransaction) {
+        // Update existing transaction
+        const oldAmount = Number(editingTransaction.amount);
+        const newAmount = parseFloat(formData.amount);
+        const oldType = editingTransaction.type;
+        const newType = formData.type;
 
-      if (transactionError) throw transactionError;
+        // Update transaction
+        const { error: updateError } = await supabase
+          .from("transactions")
+          .update({
+            type: formData.type,
+            amount: newAmount,
+            date: formData.date,
+            category: formData.category,
+            notes: formData.notes,
+            bank_id: formData.bank_id,
+            person_name: formData.person_name,
+          })
+          .eq("id", editingTransaction.id);
 
-      // Update bank balance
-      const bank = banks.find((b) => b.id === formData.bank_id);
-      if (bank) {
+        if (updateError) throw updateError;
+
+        // Adjust bank balance
+        const { data: bankData } = await supabase
+          .from("banks")
+          .select("balance")
+          .eq("id", formData.bank_id)
+          .single();
+
+        let currentBalance = Number(bankData?.balance || 0);
+
+        // Reverse old transaction effect
+        if (oldType === "income") {
+          currentBalance -= oldAmount;
+        } else {
+          currentBalance += oldAmount;
+        }
+
+        // Apply new transaction effect
+        if (newType === "income") {
+          currentBalance += newAmount;
+        } else {
+          currentBalance -= newAmount;
+        }
+
+        await supabase.from("banks").update({ balance: currentBalance }).eq("id", formData.bank_id);
+
+        toast({ title: "Transaction updated successfully" });
+      } else {
+        // Insert transaction
+        const { error: transactionError } = await supabase.from("transactions").insert({
+          user_id: user.id,
+          type: formData.type,
+          amount: parseFloat(formData.amount),
+          date: formData.date,
+          category: formData.category,
+          notes: formData.notes,
+          bank_id: formData.bank_id,
+          person_name: formData.person_name,
+        });
+
+        if (transactionError) throw transactionError;
+
+        // Update bank balance
         const { data: bankData } = await supabase
           .from("banks")
           .select("balance")
@@ -129,14 +178,15 @@ const Transactions = () => {
 
         const currentBalance = Number(bankData?.balance || 0);
         const amount = parseFloat(formData.amount);
-        const newBalance =
-          formData.type === "income" ? currentBalance + amount : currentBalance - amount;
+        const newBalance = formData.type === "income" ? currentBalance + amount : currentBalance - amount;
 
         await supabase.from("banks").update({ balance: newBalance }).eq("id", formData.bank_id);
+
+        toast({ title: "Transaction added successfully" });
       }
 
-      toast({ title: "Transaction added successfully" });
       setOpen(false);
+      setEditingTransaction(null);
       setFormData({
         type: "income",
         amount: "",
@@ -154,6 +204,20 @@ const Transactions = () => {
         description: error.message,
       });
     }
+  };
+
+  const handleEdit = (transaction: Transaction) => {
+    setEditingTransaction(transaction);
+    setFormData({
+      type: transaction.type,
+      amount: transaction.amount.toString(),
+      date: transaction.date,
+      category: transaction.category,
+      notes: transaction.notes || "",
+      bank_id: transaction.bank_id,
+      person_name: transaction.person_name || "",
+    });
+    setOpen(true);
   };
 
   const handleDelete = async (transaction: Transaction) => {
@@ -468,7 +532,21 @@ const Transactions = () => {
                 </Command>
               </PopoverContent>
             </Popover>
-            <Dialog open={open} onOpenChange={setOpen}>
+            <Dialog open={open} onOpenChange={(isOpen) => {
+              setOpen(isOpen);
+              if (!isOpen) {
+                setEditingTransaction(null);
+                setFormData({
+                  type: "income",
+                  amount: "",
+                  date: new Date().toISOString().split("T")[0],
+                  category: "",
+                  notes: "",
+                  bank_id: "",
+                  person_name: "",
+                });
+              }
+            }}>
               <DialogTrigger asChild>
                 <Button>
                   <Plus className="mr-2 h-4 w-4" />
@@ -477,7 +555,7 @@ const Transactions = () => {
               </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Add Transaction</DialogTitle>
+                <DialogTitle>{editingTransaction ? "Edit Transaction" : "Add Transaction"}</DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
@@ -581,7 +659,7 @@ const Transactions = () => {
                   />
                 </div>
                 <Button type="submit" className="w-full">
-                  Add Transaction
+                  {editingTransaction ? "Update Transaction" : "Add Transaction"}
                 </Button>
               </form>
             </DialogContent>
@@ -731,6 +809,13 @@ const Transactions = () => {
                         {transaction.type === "income" ? "+" : "-"}₹
                         {Number(transaction.amount).toFixed(2)}
                       </span>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handleEdit(transaction)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
                       <Button
                         size="icon"
                         variant="ghost"
