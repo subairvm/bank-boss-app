@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import Layout from "@/components/Layout";
 import { Plus, Trash2, UserCheck, UserX, Pencil } from "lucide-react";
+import { RupeeIcon } from "@/components/RupeeIcon";
 
 interface Credit {
   id: string;
@@ -298,13 +299,13 @@ const Credits = () => {
                       <p className="font-semibold text-foreground">{person.name}</p>
                       <div className="flex gap-4 text-sm text-muted-foreground mt-1">
                         {person.owedToMe > 0 && (
-                          <span className="text-success">
-                            They owe: ₹{person.owedToMe.toFixed(2)}
+                          <span className="text-success flex items-center gap-1">
+                            They owe: <RupeeIcon size={14} />{person.owedToMe.toFixed(2)}
                           </span>
                         )}
                         {person.iOwe > 0 && (
-                          <span className="text-expense-light">
-                            I owe: ₹{person.iOwe.toFixed(2)}
+                          <span className="text-expense-light flex items-center gap-1">
+                            I owe: <RupeeIcon size={14} />{person.iOwe.toFixed(2)}
                           </span>
                         )}
                       </div>
@@ -312,11 +313,13 @@ const Credits = () => {
                     <div className="text-right">
                       <p className="text-xs text-muted-foreground mb-1">Net</p>
                       <span
-                        className={`text-lg font-bold ${
+                        className={`text-lg font-bold flex items-center gap-1 ${
                           person.net > 0 ? "text-success" : person.net < 0 ? "text-expense-light" : "text-muted-foreground"
                         }`}
                       >
-                        {person.net > 0 ? "+" : ""}₹{person.net.toFixed(2)}
+                        {person.net > 0 ? "+" : ""}
+                        <RupeeIcon size={18} />
+                        {person.net.toFixed(2)}
                       </span>
                     </div>
                   </div>
@@ -334,7 +337,10 @@ const Credits = () => {
               <UserCheck className="h-4 w-4 text-success" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-success">₹{totalOwedToMe.toFixed(2)}</div>
+              <div className="text-2xl font-bold text-success flex items-center gap-1">
+                <RupeeIcon size={20} />
+                {totalOwedToMe.toFixed(2)}
+              </div>
             </CardContent>
           </Card>
           <Card className="shadow-card">
@@ -343,7 +349,10 @@ const Credits = () => {
               <UserX className="h-4 w-4 text-expense-light" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-expense-light">₹{totalIOwe.toFixed(2)}</div>
+              <div className="text-2xl font-bold text-expense-light flex items-center gap-1">
+                <RupeeIcon size={20} />
+                {totalIOwe.toFixed(2)}
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -392,11 +401,13 @@ const Credits = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <span
-                        className={`text-lg font-bold ${
+                        className={`text-lg font-bold flex items-center gap-1 ${
                           credit.type === "owe_me" ? "text-success" : "text-expense-light"
                         }`}
                       >
-                        {credit.type === "owe_me" ? "+" : "-"}₹{Number(credit.amount).toFixed(2)}
+                        {credit.type === "owe_me" ? "+" : "-"}
+                        <RupeeIcon size={16} />
+                        {Number(credit.amount).toFixed(2)}
                       </span>
                       <Button size="icon" variant="outline" onClick={() => handleEdit(credit)}>
                         <Pencil className="h-4 w-4" />

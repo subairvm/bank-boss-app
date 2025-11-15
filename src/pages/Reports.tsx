@@ -10,6 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { format, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
 import { cn } from "@/lib/utils";
+import { RupeeIcon } from "@/components/RupeeIcon";
 
 interface Transaction {
   id: string;
@@ -254,8 +255,9 @@ const Reports = () => {
                 <TrendingUp className="h-4 w-4 text-success" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-success">
-                  ₹{summary.totalIncome.toFixed(2)}
+                <div className="text-2xl font-bold text-success flex items-center gap-1">
+                  <RupeeIcon size={20} />
+                  {summary.totalIncome.toFixed(2)}
                 </div>
               </CardContent>
             </Card>
@@ -268,8 +270,9 @@ const Reports = () => {
                 <TrendingDown className="h-4 w-4 text-destructive" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-destructive">
-                  ₹{summary.totalExpense.toFixed(2)}
+                <div className="text-2xl font-bold text-destructive flex items-center gap-1">
+                  <RupeeIcon size={20} />
+                  {summary.totalExpense.toFixed(2)}
                 </div>
               </CardContent>
             </Card>
@@ -282,8 +285,9 @@ const Reports = () => {
                 <IndianRupee className={`h-4 w-4 ${summary.netBalance >= 0 ? "text-success" : "text-destructive"}`} />
               </CardHeader>
               <CardContent>
-                <div className={`text-2xl font-bold ${summary.netBalance >= 0 ? "text-success" : "text-destructive"}`}>
-                  ₹{summary.netBalance.toFixed(2)}
+                <div className={`text-2xl font-bold flex items-center gap-1 ${summary.netBalance >= 0 ? "text-success" : "text-destructive"}`}>
+                  <RupeeIcon size={20} />
+                  {summary.netBalance.toFixed(2)}
                 </div>
               </CardContent>
             </Card>
@@ -319,13 +323,13 @@ const Reports = () => {
                             })}
                           </p>
                           <div className="flex justify-between text-sm">
-                            <span className="text-success">Income: ₹{data.income.toFixed(2)}</span>
-                            <span className="text-destructive">
-                              Expenses: ₹{data.expense.toFixed(2)}
+                            <span className="text-success flex items-center gap-1">Income: <RupeeIcon size={12} />{data.income.toFixed(2)}</span>
+                            <span className="text-destructive flex items-center gap-1">
+                              Expenses: <RupeeIcon size={12} />{data.expense.toFixed(2)}
                             </span>
                           </div>
-                          <div className="text-sm font-semibold text-foreground">
-                            Net: ₹{(data.income - data.expense).toFixed(2)}
+                          <div className="text-sm font-semibold text-foreground flex items-center gap-1">
+                            Net: <RupeeIcon size={12} />{(data.income - data.expense).toFixed(2)}
                           </div>
                         </div>
                       ))}
@@ -356,13 +360,13 @@ const Reports = () => {
                             })}
                           </p>
                           <div className="flex justify-between text-sm">
-                            <span className="text-success">Income: ₹{data.income.toFixed(2)}</span>
-                            <span className="text-destructive">
-                              Expenses: ₹{data.expense.toFixed(2)}
+                            <span className="text-success flex items-center gap-1">Income: <RupeeIcon size={12} />{data.income.toFixed(2)}</span>
+                            <span className="text-destructive flex items-center gap-1">
+                              Expenses: <RupeeIcon size={12} />{data.expense.toFixed(2)}
                             </span>
                           </div>
-                          <div className="text-sm font-semibold text-foreground">
-                            Net: ₹{(data.income - data.expense).toFixed(2)}
+                          <div className="text-sm font-semibold text-foreground flex items-center gap-1">
+                            Net: <RupeeIcon size={12} />{(data.income - data.expense).toFixed(2)}
                           </div>
                         </div>
                       ))}
@@ -386,9 +390,9 @@ const Reports = () => {
                       <div key={category} className="space-y-2">
                         <p className="font-semibold text-foreground">{category}</p>
                         <div className="flex justify-between text-sm">
-                          <span className="text-success">Income: ₹{data.income.toFixed(2)}</span>
-                          <span className="text-destructive">
-                            Expenses: ₹{data.expense.toFixed(2)}
+                          <span className="text-success flex items-center gap-1">Income: <RupeeIcon size={12} />{data.income.toFixed(2)}</span>
+                          <span className="text-destructive flex items-center gap-1">
+                            Expenses: <RupeeIcon size={12} />{data.expense.toFixed(2)}
                           </span>
                         </div>
                       </div>
