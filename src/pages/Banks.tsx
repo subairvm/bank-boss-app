@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useToast } from "@/hooks/use-toast";
 import Layout from "@/components/Layout";
 import { Plus, Trash2, Edit } from "lucide-react";
+import { RupeeIcon } from "@/components/RupeeIcon";
 
 interface Bank {
   id: string;
@@ -225,8 +226,11 @@ const Banks = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-3xl font-bold text-foreground">
-                    <span className="text-success">₹{Number(bank.balance).toFixed(2)}</span>
+                  <p className="text-3xl font-bold text-foreground flex items-center gap-1">
+                    <span className="text-success flex items-center gap-1">
+                      <RupeeIcon size={24} />
+                      {Number(bank.balance).toFixed(2)}
+                    </span>
                   </p>
                 </CardContent>
               </Card>

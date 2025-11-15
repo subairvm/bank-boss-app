@@ -18,6 +18,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar } from "@/components/ui/calendar";
 import { format, subDays, subMonths, startOfMonth, endOfMonth, startOfYear, endOfYear } from "date-fns";
 import { cn } from "@/lib/utils";
+import { RupeeIcon } from "@/components/RupeeIcon";
 
 interface Bank {
   id: string;
@@ -717,23 +718,26 @@ const Transactions = () => {
                         {totals.income > 0 && (
                           <div className="flex justify-between text-sm">
                             <span className="text-muted-foreground">Income:</span>
-                            <span className="text-success font-medium">
-                              ₹{totals.income.toFixed(2)}
+                            <span className="text-success font-medium flex items-center gap-1">
+                              <RupeeIcon size={14} />
+                              {totals.income.toFixed(2)}
                             </span>
                           </div>
                         )}
                         {totals.expense > 0 && (
                           <div className="flex justify-between text-sm">
                             <span className="text-muted-foreground">Expenses:</span>
-                            <span className="text-destructive font-medium">
-                              ₹{totals.expense.toFixed(2)}
+                            <span className="text-destructive font-medium flex items-center gap-1">
+                              <RupeeIcon size={14} />
+                              {totals.expense.toFixed(2)}
                             </span>
                           </div>
                         )}
                         <div className="flex justify-between text-sm font-semibold pt-2 border-t border-border">
                           <span className="text-muted-foreground">Net:</span>
-                          <span className={net >= 0 ? "text-success" : "text-destructive"}>
-                            ₹{net.toFixed(2)}
+                          <span className={`flex items-center gap-1 ${net >= 0 ? "text-success" : "text-destructive"}`}>
+                            <RupeeIcon size={14} />
+                            {net.toFixed(2)}
                           </span>
                         </div>
                       </div>
@@ -802,11 +806,12 @@ const Transactions = () => {
                     </div>
                     <div className="flex items-center gap-4">
                       <span
-                        className={`text-lg font-bold ${
+                        className={`text-lg font-bold flex items-center gap-1 ${
                           transaction.type === "income" ? "text-success" : "text-expense-light"
                         }`}
                       >
-                        {transaction.type === "income" ? "+" : "-"}₹
+                        {transaction.type === "income" ? "+" : "-"}
+                        <RupeeIcon size={16} />
                         {Number(transaction.amount).toFixed(2)}
                       </span>
                       <Button

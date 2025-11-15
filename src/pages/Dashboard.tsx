@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Wallet, TrendingUp, TrendingDown, IndianRupee } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Layout from "@/components/Layout";
+import { RupeeIcon } from "@/components/RupeeIcon";
 
 interface Bank {
   id: string;
@@ -130,8 +131,9 @@ const Dashboard = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className={`text-3xl font-bold ${stat.color}`}>
-                    ₹{stat.value.toFixed(2)}
+                  <div className={`text-3xl font-bold ${stat.color} flex items-center gap-1`}>
+                    <RupeeIcon size={24} />
+                    {stat.value.toFixed(2)}
                   </div>
                 </CardContent>
               </Card>
@@ -158,8 +160,11 @@ const Dashboard = () => {
                         />
                         <span className="font-medium text-foreground">{bank.name}</span>
                       </div>
-                      <span className="font-semibold text-foreground">
-                        <span className="text-success">₹{Number(bank.balance).toFixed(2)}</span>
+                      <span className="font-semibold text-foreground flex items-center gap-1">
+                        <span className="text-success flex items-center gap-1">
+                          <RupeeIcon size={16} />
+                          {Number(bank.balance).toFixed(2)}
+                        </span>
                       </span>
                     </div>
                   ))}
@@ -195,11 +200,12 @@ const Dashboard = () => {
                         </div>
                       </div>
                       <span
-                        className={`font-semibold ${
+                        className={`font-semibold flex items-center gap-1 ${
                           transaction.type === "income" ? "text-success" : "text-expense-light"
                         }`}
                       >
-                        {transaction.type === "income" ? "+" : "-"}₹
+                        {transaction.type === "income" ? "+" : "-"}
+                        <RupeeIcon size={16} />
                         {Number(transaction.amount).toFixed(2)}
                       </span>
                     </div>

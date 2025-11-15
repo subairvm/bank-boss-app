@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import Layout from "@/components/Layout";
 import { Plus, Trash2, ArrowRight, Pencil } from "lucide-react";
+import { RupeeIcon } from "@/components/RupeeIcon";
 
 interface Bank {
   id: string;
@@ -429,8 +430,9 @@ const Transfers = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
-                      <span className="text-lg font-bold text-foreground">
-                        ₹{Number(transfer.amount).toFixed(2)}
+                      <span className="text-lg font-bold text-foreground flex items-center gap-1">
+                        <RupeeIcon size={16} />
+                        {Number(transfer.amount).toFixed(2)}
                       </span>
                       <Button size="icon" variant="ghost" onClick={() => handleEdit(transfer)}>
                         <Pencil className="h-4 w-4" />
