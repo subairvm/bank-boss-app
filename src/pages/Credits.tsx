@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import Layout from "@/components/Layout";
-import { Plus, Trash2, UserCheck, UserX } from "lucide-react";
+import { Plus, Trash2, UserCheck, UserX, Pencil } from "lucide-react";
 
 interface Credit {
   id: string;
@@ -24,6 +24,7 @@ const Credits = () => {
   const [credits, setCredits] = useState<Credit[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
+  const [editingCredit, setEditingCredit] = useState<Credit | null>(null);
   const [formData, setFormData] = useState({
     person_name: "",
     amount: "",
@@ -64,19 +65,36 @@ const Credits = () => {
     if (!user) return;
 
     try {
-      const { error } = await supabase.from("credits").insert({
-        user_id: user.id,
-        person_name: formData.person_name,
-        amount: parseFloat(formData.amount),
-        type: formData.type,
-        description: formData.description,
-        date: formData.date,
-      });
+      if (editingCredit) {
+        const { error } = await supabase
+          .from("credits")
+          .update({
+            person_name: formData.person_name,
+            amount: parseFloat(formData.amount),
+            type: formData.type,
+            description: formData.description,
+            date: formData.date,
+          })
+          .eq("id", editingCredit.id);
 
-      if (error) throw error;
+        if (error) throw error;
+        toast({ title: "Credit record updated successfully" });
+      } else {
+        const { error } = await supabase.from("credits").insert({
+          user_id: user.id,
+          person_name: formData.person_name,
+          amount: parseFloat(formData.amount),
+          type: formData.type,
+          description: formData.description,
+          date: formData.date,
+        });
 
-      toast({ title: "Credit record added successfully" });
+        if (error) throw error;
+        toast({ title: "Credit record added successfully" });
+      }
+
       setOpen(false);
+      setEditingCredit(null);
       setFormData({
         person_name: "",
         amount: "",
@@ -92,6 +110,18 @@ const Credits = () => {
         description: error.message,
       });
     }
+  };
+
+  const handleEdit = (credit: Credit) => {
+    setEditingCredit(credit);
+    setFormData({
+      person_name: credit.person_name,
+      amount: credit.amount.toString(),
+      type: credit.type,
+      description: credit.description,
+      date: credit.date,
+    });
+    setOpen(true);
   };
 
   const handleDelete = async (id: string) => {
@@ -136,7 +166,19 @@ const Credits = () => {
             <h1 className="text-4xl font-bold text-foreground">Credits</h1>
             <p className="text-muted-foreground mt-2">Track Money People I Give and Get Me</p>
           </div>
-          <Dialog open={open} onOpenChange={setOpen}>
+          <Dialog open={open} onOpenChange={(isOpen) => {
+            setOpen(isOpen);
+            if (!isOpen) {
+              setEditingCredit(null);
+              setFormData({
+                person_name: "",
+                amount: "",
+                type: "owe_me",
+                description: "",
+                date: new Date().toISOString().split("T")[0],
+              });
+            }
+          }}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
@@ -145,7 +187,7 @@ const Credits = () => {
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Add Credit Record</DialogTitle>
+                <DialogTitle>{editingCredit ? "Edit Credit Record" : "Add Credit Record"}</DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
@@ -206,7 +248,7 @@ const Credits = () => {
                   />
                 </div>
                 <Button type="submit" className="w-full">
-                  Add Credit
+                  {editingCredit ? "Update Credit" : "Add Credit"}
                 </Button>
               </form>
             </DialogContent>
@@ -277,7 +319,7 @@ const Credits = () => {
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
                       <span
                         className={`text-lg font-bold ${
                           credit.type === "owe_me" ? "text-success" : "text-expense-light"
@@ -285,6 +327,9 @@ const Credits = () => {
                       >
                         {credit.type === "owe_me" ? "+" : "-"}₹{Number(credit.amount).toFixed(2)}
                       </span>
+                      <Button size="icon" variant="outline" onClick={() => handleEdit(credit)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
                       <Button size="icon" variant="ghost" onClick={() => handleDelete(credit.id)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
