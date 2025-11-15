@@ -148,6 +148,32 @@ const Credits = () => {
     .filter((c) => c.type === "i_owe")
     .reduce((sum, c) => sum + Number(c.amount), 0);
 
+  // Calculate grand totals per person
+  const personTotals = credits.reduce((acc, credit) => {
+    const existingPerson = acc.find(p => p.name === credit.person_name);
+    const amount = Number(credit.amount);
+    
+    if (existingPerson) {
+      if (credit.type === "owe_me") {
+        existingPerson.owedToMe += amount;
+      } else {
+        existingPerson.iOwe += amount;
+      }
+    } else {
+      acc.push({
+        name: credit.person_name,
+        owedToMe: credit.type === "owe_me" ? amount : 0,
+        iOwe: credit.type === "i_owe" ? amount : 0,
+      });
+    }
+    return acc;
+  }, [] as Array<{ name: string; owedToMe: number; iOwe: number; }>);
+
+  // Calculate net amount for each person and sort
+  const sortedPersonTotals = personTotals
+    .map(p => ({ ...p, net: p.owedToMe - p.iOwe }))
+    .sort((a, b) => Math.abs(b.net) - Math.abs(a.net));
+
   if (loading) {
     return (
       <Layout>
@@ -254,6 +280,51 @@ const Credits = () => {
             </DialogContent>
           </Dialog>
         </div>
+
+        {/* Person-wise Grand Totals */}
+        {sortedPersonTotals.length > 0 && (
+          <Card className="shadow-card">
+            <CardHeader>
+              <CardTitle>Grand Totals by Person</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {sortedPersonTotals.map((person) => (
+                  <div
+                    key={person.name}
+                    className="flex items-center justify-between border-b border-border pb-3 last:border-0"
+                  >
+                    <div>
+                      <p className="font-semibold text-foreground">{person.name}</p>
+                      <div className="flex gap-4 text-sm text-muted-foreground mt-1">
+                        {person.owedToMe > 0 && (
+                          <span className="text-success">
+                            They owe: ₹{person.owedToMe.toFixed(2)}
+                          </span>
+                        )}
+                        {person.iOwe > 0 && (
+                          <span className="text-expense-light">
+                            I owe: ₹{person.iOwe.toFixed(2)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-muted-foreground mb-1">Net</p>
+                      <span
+                        className={`text-lg font-bold ${
+                          person.net > 0 ? "text-success" : person.net < 0 ? "text-expense-light" : "text-muted-foreground"
+                        }`}
+                      >
+                        {person.net > 0 ? "+" : ""}₹{person.net.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Summary Cards */}
         <div className="grid gap-4 md:grid-cols-2">
